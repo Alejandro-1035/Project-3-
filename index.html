@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Intel: Sustainability Through the Ages</title>
   <link rel="stylesheet" href="style.css" />
+  <!-- Automatically set dir="rtl" if the page language is Arabic or another RTL language -->
+  <script>
+    // This script sets dir="rtl" if the page language is Arabic or another RTL language
+    document.addEventListener('DOMContentLoaded', function() {
+      var rtlLangs = ['ar', 'he', 'fa', 'ur']; // List of RTL language codes
+      var html = document.documentElement;
+      if (rtlLangs.includes(html.lang)) {
+        html.setAttribute('dir', 'rtl');
+      }
+    });
+  </script>
 </head>
 <body>
 
@@ -38,6 +49,22 @@
     </nav>
     -->
   </header>
+
+  <!-- Language selector placed between header and timeline -->
+  <div class="lang-select-bar">
+    <form id="langFormTop">
+      <label for="langSelect">Choose language:</label>
+      <select id="langSelect" name="lang">
+        <option value="en">English</option>
+        <option value="ar">العربية (Arabic)</option>
+        <option value="he">עברית (Hebrew)</option>
+        <option value="fa">فارسی (Persian)</option>
+        <option value="ur">اردو (Urdu)</option>
+        <option value="es">Español (Spanish)</option>
+        <option value="fr">Français (French)</option>
+      </select>
+    </form>
+  </div>
 
   <!-- Add a wrapper div with a background for the timeline section -->
   <div class="timeline-section-bg">
@@ -157,82 +184,248 @@
                             next-generation sustainable semiconductor manufacturing.
           </p>
         </div>
+        <!-- Subscribe form as the last timeline card -->
+        <div class="timeline-subscribe-card">
+          <!-- This form is styled like a timeline card -->
+          <form id="subscribeForm">
+            <h2 class="subscribe-title">Stay Connected!</h2>
+            <p class="subscribe-desc">Sign up to receive updates and news from Intel.</p>
+            <div class="form-group">
+              <label for="email">Subscribe for updates:</label>
+              <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <button type="submit">Subscribe</button>
+          </form>
+        </div>
+        <!-- End subscribe form card -->
         <!-- <div class="timeline-endcap"></div> -->
       </section>
     </div>
   </div>
-</body>
-<!-- Enable horizontal scrolling with the mouse wheel for the timeline -->
-<script>
-  // Select the timeline scroll section
-  const timeline = document.querySelector('.timeline-scroll');
-  if (timeline) {
-    // Helper function to find and highlight the center card and scale others
-    function highlightCenterCard() {
-      const cards = Array.from(timeline.children);
-      let minDiff = Infinity;
-      let centerCard = null;
-      const timelineRect = timeline.getBoundingClientRect();
-      const centerX = timelineRect.left + timelineRect.width / 2;
 
-      // Find the card closest to the center
-      cards.forEach(card => {
-        if (card.tagName !== 'DIV') return;
-        const cardRect = card.getBoundingClientRect();
-        const cardCenter = cardRect.left + cardRect.width / 2;
-        const diff = Math.abs(centerX - cardCenter);
-        if (diff < minDiff) {
-          minDiff = diff;
-          centerCard = card;
+  <!-- Remove the old subscribe-section at the bottom -->
+
+  <script>
+    // Enable horizontal scrolling with the mouse wheel for the timeline
+    // Select the timeline scroll section
+    const timeline = document.querySelector('.timeline-scroll');
+    if (timeline) {
+      // Helper function to find and highlight the center card and scale others
+      function highlightCenterCard() {
+        const cards = Array.from(timeline.children);
+        let minDiff = Infinity;
+        let centerCard = null;
+        const timelineRect = timeline.getBoundingClientRect();
+        // Check if the timeline is vertical (column) or horizontal (row)
+        const isVertical = window.getComputedStyle(timeline).flexDirection === 'column';
+        // Calculate the center position based on scroll direction
+        const centerPos = isVertical
+          ? timelineRect.top + timelineRect.height / 2 // vertical center
+          : timelineRect.left + timelineRect.width / 2; // horizontal center
+
+        // Find the card closest to the center (vertical or horizontal)
+        cards.forEach(card => {
+          if (card.tagName !== 'DIV') return;
+          const cardRect = card.getBoundingClientRect();
+          // Use vertical or horizontal center based on layout
+          const cardCenter = isVertical
+            ? cardRect.top + cardRect.height / 2
+            : cardRect.left + cardRect.width / 2;
+          const diff = Math.abs(centerPos - cardCenter);
+          if (diff < minDiff) {
+            minDiff = diff;
+            centerCard = card;
+          }
+        });
+
+        // Remove all scaling/highlight classes
+        cards.forEach(card => {
+          card.classList.remove('center-card', 'near-center');
+        });
+
+        // Add .center-card to the center card
+        if (centerCard) centerCard.classList.add('center-card');
+
+        // Add .near-center to cards next to the center card
+        const cardDivs = cards.filter(card => card.tagName === 'DIV');
+        const centerIndex = cardDivs.indexOf(centerCard);
+        if (centerIndex > 0) cardDivs[centerIndex - 1].classList.add('near-center');
+        if (centerIndex < cardDivs.length - 1) cardDivs[centerIndex + 1].classList.add('near-center');
+      }
+
+      // Instead of smooth scroll, use wheel to jump to next/previous card
+      timeline.addEventListener('wheel', function(event) {
+        if (!event.shiftKey) {
+          event.preventDefault();
+          const cards = Array.from(timeline.children).filter(card => card.tagName === 'DIV');
+          const currentIndex = cards.findIndex(card => card.classList.contains('center-card'));
+          let newIndex = currentIndex;
+          if (event.deltaY > 0 && currentIndex < cards.length - 1) {
+            newIndex = currentIndex + 1;
+          } else if (event.deltaY < 0 && currentIndex > 0) {
+            newIndex = currentIndex - 1;
+          }
+          if (newIndex !== currentIndex) {
+            // Scroll so the new card is centered
+            const timelineRect = timeline.getBoundingClientRect();
+            const cardRect = cards[newIndex].getBoundingClientRect();
+            const timelineScrollLeft = timeline.scrollLeft;
+            const offset = (cardRect.left + cardRect.width / 2) - (timelineRect.left + timelineRect.width / 2);
+            timeline.scrollTo({
+              left: timelineScrollLeft + offset,
+              behavior: 'smooth'
+            });
+          }
         }
       });
 
-      // Remove all scaling/highlight classes
-      cards.forEach(card => {
-        card.classList.remove('center-card', 'near-center');
-      });
-
-      // Add .center-card to the center card
-      if (centerCard) centerCard.classList.add('center-card');
-
-      // Add .near-center to cards next to the center card
-      const cardDivs = cards.filter(card => card.tagName === 'DIV');
-      const centerIndex = cardDivs.indexOf(centerCard);
-      if (centerIndex > 0) cardDivs[centerIndex - 1].classList.add('near-center');
-      if (centerIndex < cardDivs.length - 1) cardDivs[centerIndex + 1].classList.add('near-center');
+      // Run on scroll and on load
+      timeline.addEventListener('scroll', highlightCenterCard);
+      window.addEventListener('resize', highlightCenterCard);
+      window.addEventListener('DOMContentLoaded', highlightCenterCard);
+      highlightCenterCard();
     }
 
-    // Instead of smooth scroll, use wheel to jump to next/previous card
-    timeline.addEventListener('wheel', function(event) {
-      if (!event.shiftKey) {
-        event.preventDefault();
-        const cards = Array.from(timeline.children).filter(card => card.tagName === 'DIV');
-        const currentIndex = cards.findIndex(card => card.classList.contains('center-card'));
-        let newIndex = currentIndex;
-        if (event.deltaY > 0 && currentIndex < cards.length - 1) {
-          newIndex = currentIndex + 1;
-        } else if (event.deltaY < 0 && currentIndex > 0) {
-          newIndex = currentIndex - 1;
-        }
-        if (newIndex !== currentIndex) {
-          // Scroll so the new card is centered
-          const timelineRect = timeline.getBoundingClientRect();
-          const cardRect = cards[newIndex].getBoundingClientRect();
-          const timelineScrollLeft = timeline.scrollLeft;
-          const offset = (cardRect.left + cardRect.width / 2) - (timelineRect.left + timelineRect.width / 2);
-          timeline.scrollTo({
-            left: timelineScrollLeft + offset,
-            behavior: 'smooth'
-          });
-        }
+    // Language selector: change page language, direction, and text automatically
+    document.getElementById('langSelect').addEventListener('change', function() {
+      var lang = this.value;
+      var rtlLangs = ['ar', 'he', 'fa', 'ur'];
+      var html = document.documentElement;
+      html.lang = lang; // Set the lang attribute
+      if (rtlLangs.includes(lang)) {
+        html.setAttribute('dir', 'rtl'); // Set RTL direction
+      } else {
+        html.setAttribute('dir', 'ltr'); // Set LTR direction
       }
-    });
 
-    // Run on scroll and on load
-    timeline.addEventListener('scroll', highlightCenterCard);
-    window.addEventListener('resize', highlightCenterCard);
-    window.addEventListener('DOMContentLoaded', highlightCenterCard);
-    highlightCenterCard();
-  }
-</script>
+      // Simple translations for main text and timeline cards (expand as needed)
+      var translations = {
+        en: {
+          heading: 'Sustainability Through the Ages',
+          subheading: "Explore Intel's journey through time, discovering how our commitment to innovation has shaped a more sustainable future for technology and our planet.",
+          subscribe: 'Subscribe for updates:',
+          email: 'Enter your email',
+          chooseLang: 'Choose language:',
+          button: 'Subscribe',
+          timelineInfo: 'Scroll to view timeline | Hover over cards to learn more!',
+          cards: [
+            { h2: '1968', h3: 'Intel Founded', p: 'Robert Noyce and Gordon Moore rename the newly formed company NM Electronics to Intel Corporation, laying the foundation for decades of technological innovation.' },
+            { h2: '1971', h3: 'First Microprocessor', p: "Intel debuts the 4004, the world's first commercial microprocessor, igniting the microprocessor revolution and propelling the future of computing devices." },
+            { h2: '1978', h3: '8086 Processor', p: 'Launch of the 8086 processor, establishing the x86 architecture that drives countless PCs and servers in the modern era.' },
+            { h2: '1985', h3: '386 Processor', p: 'Intel introduces the 386 processor with 32-bit architecture, ushering in a new era of performance and multitasking for personal computers.' },
+            { h2: '2006', h3: 'Peak GHG Emissions', p: "This year marks Intel's highest annual greenhouse gas emissions for operations. Over subsequent years, Intel invests heavily in chemical abatement, renewable energy, and energy-efficient manufacturing to reverse this trend." },
+            { h2: '2020', h3: 'RISE Strategy', p: 'Intel launches its RISE (Responsible, Inclusive, Sustainable, Enabling) strategy and 2030 goals, aiming to drive industry-wide progress on climate action, water stewardship, and waste reduction.' },
+            { h2: '2022', h3: 'Net-Zero By 2040', p: 'Intel announces its commitment to achieve net-zero greenhouse gas emissions (Scope 1 and 2) across its global operations by 2040, building on years of environmental initiatives.' },
+            { h2: '2023', h3: 'Renewable Electricity', p: "The company achieves 99% renewable electricity usage worldwide, helping to drastically lower carbon emissions and driving progress toward Intel's long-term sustainability goals." },
+            { h2: '2024', h3: 'Sustainability Summit', p: 'Intel hosts its first Sustainability Summit, uniting suppliers, government officials, and industry leaders to collaborate on next-generation sustainable semiconductor manufacturing.' },
+            // Subscribe card
+            { h2: '', h3: '', p: '', subscribeTitle: 'Stay Connected!', subscribeDesc: 'Sign up to receive updates and news from Intel.', subscribeLabel: 'Subscribe for updates:', subscribePlaceholder: 'Enter your email', subscribeButton: 'Subscribe' }
+          ]
+        },
+        ar: {
+          heading: 'الاستدامة عبر العصور',
+          subheading: 'استكشف رحلة إنتل عبر الزمن واكتشف كيف شكل التزامنا بالابتكار مستقبلًا أكثر استدامة للتكنولوجيا وكوكبنا.',
+          subscribe: 'اشترك للحصول على التحديثات:',
+          email: 'أدخل بريدك الإلكتروني',
+          chooseLang: 'اختر اللغة:',
+          button: 'اشترك',
+          timelineInfo: 'مرر لعرض الجدول الزمني | مرر فوق البطاقات لمعرفة المزيد!',
+          cards: [
+            { h2: '١٩٦٨', h3: 'تأسيس إنتل', p: 'روبرت نويس وجوردون مور يغيران اسم الشركة الجديدة من NM Electronics إلى إنتل، ليضعا الأساس لعقود من الابتكار التكنولوجي.' },
+            { h2: '١٩٧١', h3: 'أول معالج دقيق', p: 'إنتل تطلق 4004، أول معالج دقيق تجاري في العالم، مما يشعل ثورة المعالجات الدقيقة ويدفع مستقبل أجهزة الحوسبة.' },
+            { h2: '١٩٧٨', h3: 'معالج 8086', p: 'إطلاق معالج 8086، الذي أسس معمارية x86 التي تشغل العديد من أجهزة الكمبيوتر والخوادم الحديثة.' },
+            { h2: '١٩٨٥', h3: 'معالج 386', p: 'إنتل تقدم معالج 386 بمعمارية 32-بت، مما يفتح عصرًا جديدًا من الأداء وتعدد المهام لأجهزة الكمبيوتر الشخصية.' },
+            { h2: '٢٠٠٦', h3: 'ذروة انبعاثات الغازات الدفيئة', p: 'شهد هذا العام أعلى انبعاثات سنوية للغازات الدفيئة في عمليات إنتل. في السنوات التالية، استثمرت الشركة بكثافة في تقنيات الحد من الانبعاثات والطاقة المتجددة.' },
+            { h2: '٢٠٢٠', h3: 'استراتيجية RISE', p: 'إنتل تطلق استراتيجية RISE (المسؤولية، الشمول، الاستدامة، التمكين) وأهداف 2030 لدفع التقدم في العمل المناخي وإدارة المياه وتقليل النفايات.' },
+            { h2: '٢٠٢٢', h3: 'صفر انبعاثات بحلول 2040', p: 'إنتل تعلن التزامها بتحقيق صافي انبعاثات صفرية (النطاق 1 و2) في عملياتها العالمية بحلول عام 2040.' },
+            { h2: '٢٠٢٣', h3: 'الكهرباء المتجددة', p: 'تحقق الشركة استخدام 99% من الكهرباء المتجددة عالميًا، مما يساعد في خفض الانبعاثات الكربونية ودعم أهداف الاستدامة طويلة الأجل.' },
+            { h2: '٢٠٢٤', h3: 'قمة الاستدامة', p: 'إنتل تستضيف أول قمة استدامة لها، تجمع الموردين والمسؤولين الحكوميين وقادة الصناعة للتعاون في تصنيع أشباه الموصلات المستدامة.' },
+            // Subscribe card
+            { h2: '', h3: '', p: '', subscribeTitle: 'ابق على تواصل!', subscribeDesc: 'اشترك للحصول على آخر الأخبار والتحديثات من إنتل.', subscribeLabel: 'اشترك للحصول على التحديثات:', subscribePlaceholder: 'أدخل بريدك الإلكتروني', subscribeButton: 'اشترك' }
+          ]
+        },
+        es: {
+          heading: 'Sostenibilidad a Través de los Tiempos',
+          subheading: 'Explora el viaje de Intel a través del tiempo y descubre cómo nuestro compromiso con la innovación ha dado forma a un futuro más sostenible para la tecnología y nuestro planeta.',
+          subscribe: 'Suscríbete para recibir actualizaciones:',
+          email: 'Introduce tu correo electrónico',
+          chooseLang: 'Elige idioma:',
+          button: 'Suscribirse',
+          timelineInfo: 'Desplázate para ver la línea de tiempo | Pasa el cursor sobre las tarjetas para saber más!',
+          cards: [
+            { h2: '1968', h3: 'Fundación de Intel', p: 'Robert Noyce y Gordon Moore renombran la nueva empresa NM Electronics a Intel Corporation, sentando las bases para décadas de innovación tecnológica.' },
+            { h2: '1971', h3: 'Primer Microprocesador', p: 'Intel lanza el 4004, el primer microprocesador comercial del mundo, iniciando la revolución de los microprocesadores y el futuro de los dispositivos informáticos.' },
+            { h2: '1978', h3: 'Procesador 8086', p: 'Lanzamiento del procesador 8086, estableciendo la arquitectura x86 que impulsa innumerables PCs y servidores.' },
+            { h2: '1985', h3: 'Procesador 386', p: 'Intel introduce el procesador 386 con arquitectura de 32 bits, marcando una nueva era de rendimiento y multitarea para las computadoras personales.' },
+            { h2: '2006', h3: 'Pico de Emisiones GEI', p: 'Este año marca el mayor nivel anual de emisiones de gases de efecto invernadero de Intel. En los años siguientes, Intel invierte en reducción de emisiones y energía renovable.' },
+            { h2: '2020', h3: 'Estrategia RISE', p: 'Intel lanza su estrategia RISE (Responsable, Inclusivo, Sostenible, Facilitador) y objetivos 2030 para impulsar el progreso en acción climática y reducción de residuos.' },
+            { h2: '2022', h3: 'Cero Neto para 2040', p: 'Intel anuncia su compromiso de lograr cero emisiones netas (alcance 1 y 2) en sus operaciones globales para 2040.' },
+            { h2: '2023', h3: 'Electricidad Renovable', p: 'La empresa logra un 99% de uso de electricidad renovable a nivel mundial, ayudando a reducir las emisiones de carbono y avanzar en los objetivos de sostenibilidad.' },
+            { h2: '2024', h3: 'Cumbre de Sostenibilidad', p: 'Intel organiza su primera Cumbre de Sostenibilidad, reuniendo a proveedores, funcionarios gubernamentales y líderes de la industria.' },
+            // Subscribe card
+            { h2: '', h3: '', p: '', subscribeTitle: '¡Mantente conectado!', subscribeDesc: 'Suscríbete para recibir noticias y actualizaciones de Intel.', subscribeLabel: 'Suscríbete para recibir actualizaciones:', subscribePlaceholder: 'Introduce tu correo electrónico', subscribeButton: 'Suscribirse' }
+          ]
+        },
+        fr: {
+          heading: 'Durabilité à Travers les Âges',
+          subheading: "Explorez le parcours d'Intel à travers le temps et découvrez comment notre engagement envers l'innovation a façonné un avenir plus durable pour la technologie et notre planète.",
+          subscribe: 'Abonnez-vous pour recevoir des mises à jour :',
+          email: 'Entrez votre e-mail',
+          chooseLang: 'Choisissez la langue :',
+          button: 'S’abonner',
+          timelineInfo: 'Faites défiler pour voir la chronologie | Survolez les cartes pour en savoir plus !',
+          cards: [
+            { h2: '1968', h3: 'Fondation d’Intel', p: 'Robert Noyce et Gordon Moore renomment la nouvelle société NM Electronics en Intel Corporation, posant les bases de décennies d’innovation technologique.' },
+            { h2: '1971', h3: 'Premier Microprocesseur', p: 'Intel lance le 4004, le premier microprocesseur commercial au monde, déclenchant la révolution des microprocesseurs.' },
+            { h2: '1978', h3: 'Processeur 8086', p: 'Lancement du processeur 8086, établissant l’architecture x86 qui alimente de nombreux PC et serveurs.' },
+            { h2: '1985', h3: 'Processeur 386', p: 'Intel introduit le processeur 386 avec une architecture 32 bits, ouvrant une nouvelle ère de performance et de multitâche.' },
+            { h2: '2006', h3: 'Pic d’Émissions GES', p: 'Cette année marque le pic annuel des émissions de gaz à effet de serre d’Intel. Les années suivantes, Intel investit dans la réduction des émissions et l’énergie renouvelable.' },
+            { h2: '2020', h3: 'Stratégie RISE', p: 'Intel lance sa stratégie RISE (Responsable, Inclusive, Durable, Facilitatrice) et ses objectifs 2030 pour faire progresser l’action climatique et la réduction des déchets.' },
+            { h2: '2022', h3: 'Zéro Net d’ici 2040', p: 'Intel annonce son engagement à atteindre zéro émission nette (scope 1 et 2) dans ses opérations mondiales d’ici 2040.' },
+            { h2: '2023', h3: 'Électricité Renouvelable', p: 'L’entreprise atteint 99% d’utilisation d’électricité renouvelable dans le monde, contribuant à réduire les émissions de carbone.' },
+            { h2: '2024', h3: 'Sommet sur la Durabilité', p: 'Intel organise son premier Sommet sur la Durabilité, réunissant fournisseurs, responsables gouvernementaux et leaders du secteur.' },
+            // Subscribe card
+            { h2: '', h3: '', p: '', subscribeTitle: 'Restez connecté !', subscribeDesc: 'Abonnez-vous pour recevoir des nouvelles et des mises à jour d’Intel.', subscribeLabel: 'Abonnez-vous pour recevoir des mises à jour :', subscribePlaceholder: 'Entrez votre e-mail', subscribeButton: 'S’abonner' }
+          ]
+        }
+      };
+      // Get the translation for the selected language, or default to English
+      var t = translations[lang] || translations['en'];
+      // Change main heading
+      document.querySelector('.site-header h1').textContent = t.heading;
+      // Change subheading
+      document.querySelector('.site-header p').textContent = t.subheading;
+      // Change form labels and button in the language bar
+      document.querySelector('label[for="langSelect"]').textContent = t.chooseLang;
+      // Change timeline-info text
+      var info = document.querySelector('.timeline-info');
+      if(info) info.textContent = t.timelineInfo;
+      // Change timeline card text (including subscribe card)
+      var cardDivs = document.querySelectorAll('.timeline-scroll > div');
+      t.cards.forEach(function(card, i) {
+        if(cardDivs[i]) {
+          var h2 = cardDivs[i].querySelector('h2');
+          var h3 = cardDivs[i].querySelector('h3');
+          var p = cardDivs[i].querySelector('p');
+          if(h2) h2.textContent = card.h2;
+          if(h3) h3.textContent = card.h3;
+          if(p) p.textContent = card.p;
+          // If this is the subscribe card, update its fields
+          if(cardDivs[i].classList.contains('timeline-subscribe-card')) {
+            var subTitle = cardDivs[i].querySelector('.subscribe-title');
+            var subDesc = cardDivs[i].querySelector('.subscribe-desc');
+            var subLabel = cardDivs[i].querySelector('label[for="email"]');
+            var subInput = cardDivs[i].querySelector('input[type="email"]');
+            var subButton = cardDivs[i].querySelector('button');
+            if(subTitle) subTitle.textContent = card.subscribeTitle;
+            if(subDesc) subDesc.textContent = card.subscribeDesc;
+            if(subLabel) subLabel.textContent = card.subscribeLabel;
+            if(subInput) subInput.placeholder = card.subscribePlaceholder;
+            if(subButton) subButton.textContent = card.subscribeButton;
+          }
+        }
+      });
+    });
+  </script>
+</body>
 </html>

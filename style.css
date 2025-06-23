@@ -6,6 +6,7 @@
 /*ensure html, body take full height*/
 html, body {
   height: 100%;
+  min-height: 100vh; /* Always fill at least the viewport height */
   margin: 0;
   padding: 0;
   overflow-x: hidden; /* Prevent horizontal scroll bar */
@@ -95,7 +96,6 @@ section {
 .timeline-section-bg {
   background: #0f2747; /* Same color as header */
   width: 100vw;
-  padding: 60px 0;     /* Add space above and below the timeline */
   box-sizing: border-box;
   position: relative;  /* Needed for pseudo-elements */
 }
@@ -106,12 +106,65 @@ section {
   content: none;
 }
 
+/* Timeline scroll section is the flex container and scrolls horizontally on desktop */
+.timeline-scroll {
+  display: flex;
+  flex-direction: row;           /* Horizontal layout by default */
+  align-items: stretch;
+  gap: 40px;
+  width: 100vw;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory; /* Snap horizontally */
+  box-sizing: border-box;
+  margin: 0 auto 0 auto;
+  max-width: 100vw;
+  padding: 0;                    /* No padding, use spacers instead */
+  scroll-behavior: smooth;       /* Makes the snap effect smooth */
+}
+
+/* Spacer for centering cards horizontally on desktop */
+.timeline-scroll > .spacer {
+  flex: 0 0 50vw;                /* Spacer is 50% of viewport width */
+  max-width: 50vw;
+  min-width: 50vw;
+  height: 1px;                   /* Invisible but takes up space */
+  background: transparent;
+}
+
+@media (max-width: 700px) {
+  /* On mobile, stack timeline cards vertically and enable vertical snap */
+  .timeline-scroll {
+    flex-direction: column;      /* Stack cards vertically */
+    align-items: center;         /* Center cards horizontally */
+    overflow-x: hidden;          /* Hide horizontal scroll */
+    overflow-y: auto;            /* Enable vertical scroll */
+    scroll-snap-type: y mandatory;/* Snap vertically */
+    gap: 18px;                   /* Space between cards */
+    height: 80vh;
+    width: 100vw;
+    max-width: 100vw;
+    box-sizing: border-box;
+    margin: 40px 0 0 0;
+    padding: 0;                  /* No padding, use spacers instead */
+    scroll-behavior: smooth;
+  }
+  /* Spacer for centering cards vertically on mobile */
+  .timeline-scroll > .spacer {
+    flex: 0 0 10vh;              /* Spacer is 10% of viewport height */
+    max-height: 10vh;
+    min-height: 10vh;
+    width: 1px;                  /* Invisible but takes up space */
+    background: transparent;
+  }
+}
+
 /* Timeline scroll section is the flex container and scrolls horizontally */
 .timeline-scroll {
   display: flex;
   align-items: stretch;
   gap: 40px;
-  width: 100vw;
+  width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-snap-type: x mandatory;
@@ -120,7 +173,7 @@ section {
   padding-right: 50vw;
   box-sizing: border-box;
   margin: 100px auto 0 auto;
-  max-width: 100vw;
+  max-width: 100%;
   padding-bottom: 2px;
   scroll-behavior: smooth; /* Makes the snap effect smooth */
 }
@@ -221,7 +274,7 @@ section h2 {
 }
 
 section h3 {
-  font-size: 3em;
+  font-size: 1em;
   margin: 0 0 10px 0;
   color: #0f2747;
   font-weight: 600;
@@ -252,7 +305,6 @@ section p {
   font-weight: bold;
   color: #fff;                /* White text for contrast */
   background: #04315300;        /* Brighter blue background */
-  padding: 18px 0;
   margin: 24px 0 0 0;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0,104,181,0.08);
@@ -279,45 +331,81 @@ section p {
 
 /* Responsive design for mobile */
 @media (max-width: 700px) {
-  .site-header {
-    padding: 14px 0 8px 0;
-  }
-  .site-header .logo {
-    height: 36px;
-  }
-  .site-header h1 {
-    font-size: 1.5em;
-    margin: 8px 0 4px 0;
-  }
-  .site-header p {
-    font-size: 1em;
-    margin-bottom: 10px;
-  }
+  /* On mobile, stack timeline cards vertically and enable vertical snap */
   section {
-    gap: 12px;
-    padding: 0 4px 18px 4px;
-    max-width: 100vw; /* Make sure section doesn't overflow */
-  }
-  section > div {
-    width: 90vw;
-    min-width: 220px;
-    max-width: 98vw;
-    padding: 12px 8px;
-    flex: 0 0 90vw;
-  }
-  .timeline-scroll {
-    gap: 12px;
-    padding-left: 8vw;
-    padding-right: 8vw;
-    margin: 40px 0 0 0;
+    display: block;              /* Use block layout for vertical scroll */
+    overflow-x: unset;           /* Remove horizontal overflow */
+    overflow-y: unset;           /* Remove vertical overflow */
+    scroll-snap-type: none;      /* Disable horizontal snap on section */
+    gap: 0;                      /* Remove gap, handled by .timeline-scroll */
+    padding: 0 0 18px 0;         /* Remove side padding */
+    margin: 0 auto 0 auto;       /* Remove top margin */
     max-width: 100vw;
   }
+  .timeline-scroll {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: visible;           /* Make sure cards are not clipped horizontally */
+    overflow-y: auto;              /* Enable vertical scroll */
+    scroll-snap-type: y mandatory;
+    gap: 18px;
+    padding: 4vw 0;                /* Reduce padding so cards fit in viewport */
+    height: 80vh;
+    width: 100vw;
+    max-width: 100vw;
+    box-sizing: border-box;
+    margin: 40px 0 0 0;
+    scroll-behavior: smooth;
+  }
+  /* Each card fills most of the width, and snaps to center vertically */
   .timeline-scroll > div,
   .timeline-scroll > div:not(.timeline-endcap) {
-    flex: 0 0 90vw;
+    flex: 0 0 auto;
+    width: 96vw;                   /* Make cards a bit smaller than viewport */
+    min-width: 0;
     max-width: 98vw;
-    min-width: 220px;
+    min-height: 220px;
+    max-height: 600px;
+    scroll-snap-align: center;
+    margin: 0 auto;
     padding: 12px 8px;
+    opacity: 0.4;
+    transform: scale(0.6);
+    transition: opacity 0.4s, transform 0.4s;
+    box-sizing: border-box;        /* Prevent padding from making cards too wide */
+  }
+  /* The centered card will have full opacity and normal size */
+  .timeline-scroll > div.center-card {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  /* Cards near the center get a bit larger (set by JS with .near-center) */
+  .timeline-scroll > div.near-center {
+    opacity: 0.7;
+    transform: scale(0.85);
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  /* Hide image and text by default for all cards except the centered one */
+  .timeline-scroll > div:not(.center-card) img,
+  .timeline-scroll > div:not(.center-card) p {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+  }
+  /* When a card is centered (vertical scroll on mobile), show its image and text, and move headings up. */
+  .timeline-scroll > div.center-card h2,
+  .timeline-scroll > div.center-card h3 {
+    opacity: 1;
+    transform: translateY(0); /* Move to top of card */
+    transition: transform 0.5s, opacity 0.5s;
+  }
+  .timeline-scroll > div.center-card img,
+  .timeline-scroll > div.center-card p {
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.5s;
   }
   section img {
     width: 90vw;
@@ -335,13 +423,11 @@ section p {
   section p {
     font-size: 1.1em;
   }
-
   /* Move the timeline info to the top for mobile */
   .timeline-info {
     margin: 18px 0 0 0;      /* Less margin at the top */
     order: -1;                /* Move to the top in flex container */
   }
-
   /* Make sure the timeline-info is visible and styled well on mobile */
   .timeline-section-bg {
     display: flex;
@@ -446,4 +532,228 @@ section p {
   opacity: 1;
   pointer-events: auto;
   transition: opacity 0.4s;
+}
+
+/* RTL support: Flip timeline layout for right-to-left languages (like Arabic) */
+:dir(rtl) .timeline-scroll {
+  flex-direction: row-reverse; /* Timeline starts from the right in RTL */
+}
+
+/* Subscription section styles inspired by Intel's subscription center */
+.subscribe-section {
+  background: #fff; /* White background */
+  padding: 40px 0 60px 0; /* Top and bottom space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.subscribe-section form {
+  background: #fff;
+  border-radius: 16px; /* Rounded corners */
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08); /* Soft shadow */
+  padding: 32px 24px 28px 24px;
+  max-width: 400px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.subscribe-title {
+  font-size: 2em;
+  color: #0f2747;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.subscribe-desc {
+  font-size: 1.1em;
+  color: #333;
+  margin-bottom: 18px;
+  text-align: center;
+}
+.form-group {
+  width: 100%;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.form-group label {
+  font-size: 1em;
+  color: #0f2747;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+#email, #langSelect {
+  width: 60%;
+  padding: 10px 12px;
+  border: 1px solid #b3cbe6;
+  border-radius: 8px;
+  font-size: 1em;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+  text-align: center; /* Center the text inside the dropdown */
+  transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for border and shadow */
+}
+
+#langSelect {
+  display: block; /* Make the select a block element so margin auto works */
+  margin-left: auto; /* Center horizontally */
+  margin-right: auto; /* Center horizontally */
+  width: 40%;
+  padding: 10px 12px;
+  border: 1px solid #b3cbe6;
+  border-radius: 8px;
+  font-size: 2em;
+  margin-bottom: 0;
+  box-sizing: border-box;
+  text-align: center; /* Center the text inside the dropdown */
+  transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition for border and shadow */
+  color: #0068b5; /* Intel blue font color */
+  font-family: 'Segoe UI', Arial, sans-serif; /* Match site font */
+  font-weight: bold; /* Make the font bold */
+}
+#langSelect:focus {
+  border-color: #0068b5; /* Intel blue border on focus */
+  box-shadow: 0 0 8px #b3cbe6; /* Soft blue glow on focus */
+  outline: none; /* Remove default outline */
+}
+
+/* When the language selector is focused, smoothly add space below it to fit the dropdown */
+.lang-select-bar:focus-within + .timeline-section-bg {
+  padding-top: 10%; /* Increase top padding to fit the open dropdown */
+  transition: padding-top 0.5s;
+}
+.timeline-section-bg {
+  transition: padding-top 0.5s; /* Smooth transition for top padding */
+}
+
+#langForm button {
+  width: 100%;
+  padding: 12px 0;
+  background: #0068b5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+#langForm button:hover {
+  background: #00518a;
+}
+
+/* Style the subscribe card to match other timeline cards */
+.timeline-subscribe-card {
+  background: #fff;
+  border-radius: 50px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  padding: 20px 18px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 320px;
+  max-width: 900px;
+  flex: 0 0 80vw;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.timeline-subscribe-card form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.timeline-subscribe-card .subscribe-title {
+  color: #0068b5; /* Intel blue */
+  text-align: center;
+  font-size: 2.5em;
+  margin-bottom: 8px;
+}
+.timeline-subscribe-card .subscribe-desc {
+  color: #333;
+  text-align: center;
+  font-size: 1.3em;
+  margin-bottom: 18px;
+}
+.timeline-subscribe-card .form-group {
+  width: 100%;
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.timeline-subscribe-card label {
+  font-size: 1em;
+  color: #0f2747;
+  margin-bottom: 6px;
+  font-weight: 600;
+  text-align: center;
+}
+.timeline-subscribe-card input[type="email"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #b3cbe6;
+  border-radius: 8px;
+  font-size: 1em;
+  margin-bottom: 6px;
+  box-sizing: border-box;
+  text-align: center;
+}
+.timeline-subscribe-card button {
+  width: 100%;
+  padding: 12px 0;
+  background: #0068b5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+  text-align: center;
+}
+.timeline-subscribe-card button:hover {
+  background: #00518a;
+}
+
+/* Animate the subscribe card content like other timeline cards */
+.timeline-subscribe-card .subscribe-title,
+.timeline-subscribe-card .subscribe-desc,
+.timeline-subscribe-card form,
+.timeline-subscribe-card .form-group,
+.timeline-subscribe-card button {
+  opacity: 0;
+  transform: translateY(120px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+.timeline-subscribe-card.center-card .subscribe-title,
+.timeline-subscribe-card.center-card .subscribe-desc,
+.timeline-subscribe-card.center-card form,
+.timeline-subscribe-card.center-card .form-group,
+.timeline-subscribe-card.center-card button {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 700px) {
+  .subscribe-section form {
+    padding: 18px 6vw 18px 6vw;
+    max-width: 98vw;
+  }
+  .timeline-subscribe-card {
+    min-width: 0;
+    max-width: 98vw;
+    width: 96vw;
+    padding: 12px 8px;
+  }
+  .timeline-subscribe-card .subscribe-title {
+    font-size: 1.5em;
+  }
+  .timeline-subscribe-card .subscribe-desc {
+    font-size: 1em;
+  }
 }
